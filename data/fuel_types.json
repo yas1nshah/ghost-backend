@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Petrol"
+  },
+  {
+    "id": 2,
+    "name": "Electric"
+  },
+  {
+    "id": 3,
+    "name": "Hybrid"
+  },
+  {
+    "id": 4,
+    "name": "Diesel"
+  },
+  {
+    "id": 5,
+    "name": "CNG"
+  },
+  {
+    "id": 6,
+    "name": "LPG"
+  }
+]

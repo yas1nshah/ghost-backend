@@ -11,6 +11,7 @@ import (
 
 	"ghostprotocols.pk/internal/data"
 	"ghostprotocols.pk/internal/validator"
+
 	"github.com/chai2010/webp"
 	"github.com/google/uuid"
 	"github.com/nfnt/resize"
@@ -220,6 +221,7 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 func (app *application) updateProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := app.contextGetUser(r)
+
 	// Parse the form data
 	err := r.ParseMultipartForm(10 << 20) // Limit your file size to 10 MB
 	if err != nil {

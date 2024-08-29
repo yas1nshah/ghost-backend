@@ -445,40 +445,46 @@ type NumberFilter struct {
 func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata, error) {
 	query := fmt.Sprintf(`
 	SELECT 
-	l.id, l.updated, l.active, l.featured, l.gp_managed, l.gallery, 
-	m.name AS make_name,
-	mo.name AS model_name,
-	v.name AS version_name,
-	l.cyear, l.price, 
-	ci.name AS city_name,
-	a.name AS area_name,
-	l.mileage, l.transmission_is_auto, 
-	f.name AS fuel_type_name,
-	count(*) OVER()
+			l.id, l.updated_at,
+			l.active, l.featured, 
+			l.gp_managed,l.gp_certified, l.gp_yard,
+			l.gallery, 
+			m.name AS make,
+			mo.name AS model,
+			COALESCE(v.name, '') AS version,
+			l.year, l.price, 
+			ci.name AS city,
+			COALESCE(a.name, '') AS area,
+			t.name AS transmission,
+			l.mileage,
+    		f.name AS fuel_type,
+			COUNT(*) OVER()
+		FROM listings l
+		LEFT JOIN data_makes m ON l.make = m.id
+		LEFT JOIN data_models mo ON l.model = mo.id
+		LEFT JOIN data_versions v ON l.version = v.id
+		LEFT JOIN cities ci ON l.city = ci.id
+		LEFT JOIN areas a ON l.area = a.id
+		LEFT JOIN data_transmissions t ON l.transmission = t.id
+		LEFT JOIN fuel_types f ON l.fuel_type = f.id
+		WHERE
+			($1::INT IS NULL OR l.make = $1)
+			AND ($2::INT IS NULL OR l.model = $2)
+			AND ($3::INT IS NULL OR l.version = $3)
+			AND ($4::INT IS NULL OR l.year >= $4)
+			AND ($5::INT IS NULL OR l.year <= $5)
+			AND ($6::INT IS NULL OR l.city = $6)
+			AND ($7::INT IS NULL OR l.area = $7)
+			AND ($8::INT IS NULL OR l.fuel_type = $8)
+			AND ($9::INT IS NULL OR l.transmission = $9)
+			AND ($10::BOOL IS NULL OR l.active = $10)
+			AND ($11::BOOL IS NULL OR l.featured = $11)
+			AND ($12::BOOL IS NULL OR l.gp_managed = $12)
+		
+		ORDER BY %s %s, l.id DESC
+		LIMIT $13 OFFSET $14;
 
-	FROM listings l
-	LEFT JOIN makes m ON l.cmake = m.id
-	LEFT JOIN models mo ON l.cmodel = mo.id
-	LEFT JOIN versions v ON l.cversion = v.id
-	LEFT JOIN cities ci ON l.city = ci.id
-	LEFT JOIN areas a ON l.area = a.id
-	LEFT JOIN fuel_types f ON l.fuel_type = f.id
-
-	WHERE 
-	($1::INT IS NULL OR l.cmake = $1)
-	AND ($2::INT IS NULL OR l.cmodel = $2)
-	AND ($3::INT IS NULL OR l.cversion = $3)
-	AND ($4::INT IS NULL OR l.cyear >= $4)
-	AND ($5::INT IS NULL OR l.cyear <= $5)
-	AND ($6::INT IS NULL OR l.city = $6)
-	AND ($7::INT IS NULL OR l.area = $7)
-	AND ($8::INT IS NULL OR l.fuel_type = $8)
-	AND ($9::BOOL IS NULL OR l.transmission_is_auto = $9)
-	AND ($10::BOOL IS NULL OR l.active = $10)
-	AND ($11::BOOL IS NULL OR l.featured = $11)
-	AND ($12::BOOL IS NULL OR l.gp_managed = $12)
-	ORDER BY %s %s, id DESC
-	LIMIT $13 OFFSET $14;`, s.sortColumn(), s.sortDirection())
+	`, s.sortColumn(), s.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -509,11 +515,10 @@ func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata
 	listings := []*Listing{}
 	totalRecords := 0
 	for rows.Next() {
-
 		var (
-			galleryBytes []byte         // Declare galleryBytes as []byte to store JSON data
-			versionName  sql.NullString // Use sql.NullString for nullable version_name
-			areaName     sql.NullString // Use sql.NullString for nullable area_name
+			galleryBytes []byte // Declare galleryBytes as []byte to store JSON data
+			// versionName  sql.NullString // Use sql.NullString for nullable version_name
+			areaName sql.NullString // Use sql.NullString for nullable area_name
 		)
 
 		var listing Listing
@@ -524,16 +529,18 @@ func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata
 			&listing.Active,
 			&listing.Featured,
 			&listing.GpManaged,
+			&listing.GpCertified,
+			&listing.GpYard,
 			&galleryBytes,
 			&listing.Make,
 			&listing.Model,
-			&versionName,
+			&listing.Version,
 			&listing.Year,
 			&listing.Price,
 			&listing.City,
-			&areaName,
-			&listing.Mileage,
+			&listing.Area,
 			&listing.Transmission,
+			&listing.Mileage,
 			&listing.FuelType,
 			&totalRecords,
 		)
@@ -541,11 +548,11 @@ func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata
 			return nil, Metadata{}, err
 		}
 
-		if versionName.Valid {
-			listing.Version = versionName.String
-		} else {
-			listing.Version = ""
-		}
+		// if versionName.Valid {
+		// 	listing.Version = versionName.String
+		// } else {
+		// 	listing.Version = ""
+		// }
 
 		if areaName.Valid {
 			listing.Area = areaName.String
@@ -569,3 +576,131 @@ func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata
 
 	return listings, metadata, nil
 }
+
+// func (m *ListingsModel) GetAll(f ListingFilter, s Sorting) ([]*Listing, Metadata, error) {
+// 	query := fmt.Sprintf(`
+// 		SELECT
+// 			l.id, l.updated_at, l.active, l.featured, l.gp_managed, l.gallery,
+// 			m.name AS make_name,
+// 			mo.name AS model_name,
+// 			COALESCE(v.name, '') AS version_name,
+// 			l.year, l.price,
+// 			ci.name AS city_name,
+// 			COALESCE(a.name, '') AS area_name,
+// 			l.mileage,
+// 			t.name AS transmission,
+// 			f.name AS fuel_type_name,
+// 			COUNT(*) OVER()
+// 		FROM listings l
+// 		LEFT JOIN data_makes m ON l.make = m.id
+// 		LEFT JOIN data_models mo ON l.model = mo.id
+// 		LEFT JOIN data_versions v ON l.version = v.id
+// 		LEFT JOIN cities ci ON l.city = ci.id
+// 		LEFT JOIN areas a ON l.area = a.id
+// 		LEFT JOIN fuel_types f ON l.fuel_type = f.id
+// 		LEFT JOIN data_transmissions t ON l.transmission = t.id
+// 		WHERE
+// 			($1::INT IS NULL OR l.make = $1)
+// 			AND ($2::INT IS NULL OR l.model = $2)
+// 			AND ($3::INT IS NULL OR l.version = $3)
+// 			AND ($4::INT IS NULL OR l.year >= $4)
+// 			AND ($5::INT IS NULL OR l.year <= $5)
+// 			AND ($6::INT IS NULL OR l.city = $6)
+// 			AND ($7::INT IS NULL OR l.area = $7)
+// 			AND ($8::INT IS NULL OR l.fuel_type = $8)
+// 			AND ($9::INT IS NULL OR l.transmission = $9)
+// 			AND ($10::BOOL IS NULL OR l.active = $10)
+// 			AND ($11::BOOL IS NULL OR l.featured = $11)
+// 			AND ($12::BOOL IS NULL OR l.gp_managed = $12)
+// 		ORDER BY %s %s, l.id DESC
+// 		LIMIT $13 OFFSET $14;
+// 	`, s.sortColumn(), s.sortDirection())
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// 	defer cancel()
+
+// 	args := []interface{}{
+// 		sql.NullInt32{Int32: f.Make, Valid: f.Make != 0},
+// 		sql.NullInt32{Int32: f.Model, Valid: f.Model != 0},
+// 		sql.NullInt32{Int32: f.Version, Valid: f.Version != 0},
+// 		sql.NullInt32{Int32: f.Year.Start, Valid: f.Year.Start != 0},
+// 		sql.NullInt32{Int32: f.Year.End, Valid: f.Year.End != 0},
+// 		sql.NullInt32{Int32: f.City, Valid: f.City != 0},
+// 		sql.NullInt32{Int32: f.Area, Valid: f.Area != 0},
+// 		sql.NullInt32{Int32: f.FuelType, Valid: f.FuelType != 0},
+// 		sql.NullBool{Bool: f.TransmissionAuto != nil && *f.TransmissionAuto, Valid: f.TransmissionAuto != nil},
+// 		sql.NullBool{Bool: f.Active != nil && *f.Active, Valid: f.Active != nil},
+// 		sql.NullBool{Bool: f.Featured != nil && *f.Featured, Valid: f.Featured != nil},
+// 		sql.NullBool{Bool: f.GpManaged != nil && *f.GpManaged, Valid: f.GpManaged != nil},
+// 		s.limit(),
+// 		s.offset(),
+// 	}
+
+// 	rows, err := m.DB.QueryContext(ctx, query, args...)
+// 	if err != nil {
+// 		return nil, Metadata{}, fmt.Errorf("error querying database: %w", err)
+// 	}
+// 	defer rows.Close()
+
+// 	listings := []*Listing{}
+// 	totalRecords := 0
+// 	for rows.Next() {
+// 		var (
+// 			galleryBytes []byte         // Declare galleryBytes as []byte to store JSON data
+// 			versionName  sql.NullString // Use sql.NullString for nullable version_name
+// 			areaName     sql.NullString // Use sql.NullString for nullable area_name
+// 		)
+
+// 		var listing Listing
+
+// 		err := rows.Scan(
+// 			&listing.ID,
+// 			&listing.UpdatedAt,
+// 			&listing.Active,
+// 			&listing.Featured,
+// 			&listing.GpManaged,
+// 			&galleryBytes,
+// 			&listing.Make,
+// 			&listing.Model,
+// 			&versionName,
+// 			&listing.Year,
+// 			&listing.Price,
+// 			&listing.City,
+// 			&areaName,
+// 			&listing.Mileage,
+// 			&listing.Transmission,
+// 			&listing.FuelType,
+// 			&totalRecords,
+// 		)
+// 		if err != nil {
+// 			return nil, Metadata{}, err
+// 		}
+
+// 		if versionName.Valid {
+// 			listing.Version = versionName.String
+// 		} else {
+// 			listing.Version = ""
+// 		}
+
+// 		if areaName.Valid {
+// 			listing.Area = areaName.String
+// 		} else {
+// 			listing.Area = ""
+// 		}
+
+// 		var gallery []Image
+// 		if err := json.Unmarshal(galleryBytes, &gallery); err != nil {
+// 			return nil, Metadata{}, err
+// 		}
+
+// 		listing.Gallery = gallery
+
+// 		listings = append(listings, &listing)
+// 	}
+// 	if err = rows.Err(); err != nil {
+// 		return nil, Metadata{}, err
+// 	}
+// 	metadata := calculateMetadata(totalRecords, s.Page, s.PageSize)
+
+// 	return listings, metadata, nil
+// }

@@ -15,7 +15,6 @@ import (
 	"github.com/chai2010/webp"
 	"github.com/google/uuid"
 	"github.com/nfnt/resize"
-	"github.com/patrickmn/go-cache"
 )
 
 func (app *application) getListingHandler(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +183,7 @@ func (app *application) saveGalleryHandler(w http.ResponseWriter, r *http.Reques
 	uuid := uuid.New().String()
 
 	// Ensure the directory exists
-	err = os.MkdirAll("./listings/images", os.ModePerm)
+	err = os.MkdirAll("./public/media/listings", os.ModePerm)
 	if err != nil {
 		http.Error(w, "Unable to create directory for images", http.StatusInternalServerError)
 		fmt.Println("Error creating directory:", err)
@@ -200,7 +199,10 @@ func (app *application) saveGalleryHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Return the UUID
-	fmt.Fprintln(w, uuid)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"url": uuid + ".webp"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func saveImageAsWebP(img image.Image, filepath string) error {
@@ -271,24 +273,24 @@ func (app *application) getHomeFeed(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 	input.Sorting.Page = 1
 	input.Sorting.PageSize = 8
-	input.Sorting.Sort = "updated"
-	input.Sorting.SortSafelist = []string{"updated", "-updated"}
+	input.Sorting.Sort = "updated_at"
+	input.Sorting.SortSafelist = []string{"updated_at", "-updated_at"}
 	if data.ValidateFilters(v, input.Sorting); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	cacheKey := "home_feed"
-	if cachedData, found := app.cache.Get(cacheKey); found {
-		// Type assertion to convert cachedData back to envelope type
-		if cachedEnvelope, ok := cachedData.(envelope); ok {
-			err := app.writeJSON(w, http.StatusOK, cachedEnvelope, nil)
-			if err != nil {
-				app.serverErrorResponse(w, r, err)
-			}
-			return
-		}
-	}
+	// cacheKey := "home_feed"
+	// if cachedData, found := app.cache.Get(cacheKey); found {
+	// 	// Type assertion to convert cachedData back to envelope type
+	// 	if cachedEnvelope, ok := cachedData.(envelope); ok {
+	// 		err := app.writeJSON(w, http.StatusOK, cachedEnvelope, nil)
+	// 		if err != nil {
+	// 			app.serverErrorResponse(w, r, err)
+	// 		}
+	// 		return
+	// 	}
+	// }
 
 	setTrue := true
 	setFalse := false
@@ -324,7 +326,7 @@ func (app *application) getHomeFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cache the response
-	app.cache.Set(cacheKey, response, cache.DefaultExpiration)
+	// app.cache.Set(cacheKey, response, cache.DefaultExpiration)
 
 	err = app.writeJSON(w, http.StatusOK, response, nil)
 	if err != nil {

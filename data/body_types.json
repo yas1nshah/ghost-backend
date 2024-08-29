@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "name": "Hatchback"
+  },
+  {
+    "id": 2,
+    "name": "Sedan"
+  },
+  {
+    "id": 3,
+    "name": "SUV"
+  },
+  {
+    "id": 4,
+    "name": "Crossover"
+  },
+  {
+    "id": 5,
+    "name": "Mini Van"
+  },
+  {
+    "id": 6,
+    "name": "Van"
+  },
+  {
+    "id": 7,
+    "name": "MPV"
+  },
+  {
+    "id": 8,
+    "name": "Micro Van"
+  },
+  {
+    "id": 9,
+    "name": "Compact Sedan"
+  },
+  {
+    "id": 10,
+    "name": "Double Cabin"
+  },
+  {
+    "id": 11,
+    "name": "Compact SUV"
+  },
+  {
+    "id": 12,
+    "name": "Pick Up"
+  },
+  {
+    "id": 13,
+    "name": "Station Wagon"
+  },
+  {
+    "id": 14,
+    "name": "Coupe"
+  },
+  {
+    "id": 15,
+    "name": "Mini Vehicles"
+  },
+  {
+    "id": 16,
+    "name": "Truck"
+  },
+  {
+    "id": 17,
+    "name": "Convertible"
+  },
+  {
+    "id": 18,
+    "name": "High Roof"
+  },
+  {
+    "id": 19,
+    "name": "Single Cabin"
+  },
+  {
+    "id": 20,
+    "name": "Off-Road"
+  },
+  {
+    "id": 21,
+    "name": "Compact Hatchback"
+  },
+  {
+    "id": 22,
+    "name": "Subcompact Hatchback"
+  }
+]

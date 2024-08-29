@@ -1,0 +1,116 @@
+[
+  {
+    "id": 1,
+    "name": "White",
+    "name_ur": "سفید",
+    "hex_code": "#FFFFFF"
+  },
+  {
+    "id": 2,
+    "name": "Silver",
+    "name_ur": "چاندی",
+    "hex_code": "#C0C0C0"
+  },
+  {
+    "id": 3,
+    "name": "Black",
+    "name_ur": "کالا",
+    "hex_code": "#000000"
+  },
+  {
+    "id": 4,
+    "name": "Grey",
+    "name_ur": "سرمئی",
+    "hex_code": "#808080"
+  },
+  {
+    "id": 5,
+    "name": "Blue",
+    "name_ur": "نیلا",
+    "hex_code": "#0000FF"
+  },
+  {
+    "id": 6,
+    "name": "Green",
+    "name_ur": "سبز",
+    "hex_code": "#008000"
+  },
+  {
+    "id": 7,
+    "name": "Red",
+    "name_ur": "سرخ",
+    "hex_code": "#FF0000"
+  },
+  {
+    "id": 8,
+    "name": "Maroon",
+    "name_ur": "مہرا",
+    "hex_code": "#800000"
+  },
+  {
+    "id": 9,
+    "name": "Beige",
+    "name_ur": "بیج",
+    "hex_code": "#F5F5DC"
+  },
+  {
+    "id": 10,
+    "name": "Pink",
+    "name_ur": "گلابی",
+    "hex_code": "#FFC0CB"
+  },
+  {
+    "id": 11,
+    "name": "Brown",
+    "name_ur": "بھورا",
+    "hex_code": "#A52A2A"
+  },
+  {
+    "id": 12,
+    "name": "Burgundy",
+    "name_ur": "برگنڈی",
+    "hex_code": "#800020"
+  },
+  {
+    "id": 13,
+    "name": "Yellow",
+    "name_ur": "پیلا",
+    "hex_code": "#FFFF00"
+  },
+  {
+    "id": 14,
+    "name": "Bronze",
+    "name_ur": "کانسی",
+    "hex_code": "#CD7F32"
+  },
+  {
+    "id": 15,
+    "name": "Purple",
+    "name_ur": "ارغوانی",
+    "hex_code": "#800080"
+  },
+  {
+    "id": 16,
+    "name": "Turquoise",
+    "name_ur": "فیروزہ",
+    "hex_code": "#40E0D0"
+  },
+  {
+    "id": 17,
+    "name": "Orange",
+    "name_ur": "نارنجی",
+    "hex_code": "#FFA500"
+  },
+  {
+    "id": 18,
+    "name": "Indigo",
+    "name_ur": "نیل",
+    "hex_code": "#4B0082"
+  },
+  {
+    "id": 19,
+    "name": "Magenta",
+    "name_ur": "میجینٹا",
+    "hex_code": "#FF00FF"
+  }
+]

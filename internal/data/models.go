@@ -9,6 +9,7 @@ type Models struct {
 	Users    UserModel
 	Tokens   TokenModel
 	Listings ListingsModel
+	Data     DataModel
 }
 
 func NewModels(db *sql.DB) Models {
@@ -16,6 +17,7 @@ func NewModels(db *sql.DB) Models {
 		Users:    UserModel{DB: db},
 		Tokens:   TokenModel{DB: db},
 		Listings: ListingsModel{DB: db},
+		Data:     DataModel{DB: db},
 	}
 }
 
